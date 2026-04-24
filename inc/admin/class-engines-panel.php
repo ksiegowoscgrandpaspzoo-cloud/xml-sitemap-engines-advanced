@@ -1,19 +1,13 @@
 <?php
 /**
- * Unified "Engines" settings tab.
+ * Bing / Yandex / Baidu connector section inside the unified
+ * "Search engines" tab.
  *
- * Aggregates every submission connector (Google via the existing
- * Search Console integration + Bing + Yandex + Baidu) into one
- * admin screen with per-engine sub-cards. Avoids multiplying
- * top-level tabs.
- *
- * Flow:
- *   1. `xmlse_settings_tabs` filter adds the "Engines" tab to the
- *      free plugin's settings page.
- *   2. `admin_init` registers the connector-config options +
- *      sections + fields under the `xmlse_engines` option group.
- *   3. Each connector's field callback renders a small form with
- *      credentials + a Submit-now button.
+ * Since the "merge Search Console + Engines into one tab" refactor
+ * this class no longer owns its own tab — it just registers a second
+ * settings field under the free plugin's existing `xmlse_search_console`
+ * section, below the Google wizard. One form, one save button, one
+ * submission log story across all four engines.
  *
  * @package XMLSE_Advanced
  */
@@ -27,58 +21,31 @@ use XMLSE\Advanced\Connectors\Yandex;
 defined( 'WPINC' ) || die;
 
 /**
- * Engines admin tab.
+ * Bing + Yandex + Baidu section of the Search engines tab.
  *
  * @since 0.1.0
  */
 final class Engines_Panel {
 
 	/**
-	 * Register hooks — tab + settings + renderer.
+	 * Register hooks — setting registration + second field on the
+	 * free plugin's Search engines tab.
 	 *
 	 * @since 0.1.0
 	 */
 	public static function register_hooks() {
-		add_filter( 'xmlse_settings_tabs', array( __CLASS__, 'add_tab' ) );
-		add_action( 'admin_init', array( __CLASS__, 'register_settings' ) );
+		add_action( 'admin_init', array( __CLASS__, 'register_settings' ), 20 );
 	}
 
 	/**
-	 * Inject the "Engines" tab between "Search Console" and "Advanced".
-	 *
-	 * @since 0.1.0
-	 *
-	 * @param array<string, string> $tabs Existing tabs.
-	 * @return array<string, string>
-	 */
-	public static function add_tab( $tabs ) {
-		if ( ! is_array( $tabs ) ) {
-			return $tabs;
-		}
-		$label = esc_html__( 'Engines', 'xml-sitemap-engines-advanced' );
-		$before = 'advanced';
-		$out    = array();
-		foreach ( $tabs as $slug => $current ) {
-			if ( $slug === $before && ! isset( $out['engines'] ) ) {
-				$out['engines'] = $label;
-			}
-			$out[ $slug ] = $current;
-		}
-		if ( ! isset( $out['engines'] ) ) {
-			$out['engines'] = $label;
-		}
-		return $out;
-	}
-
-	/**
-	 * Register the three connector-config options + render the tab body
-	 * when the tab is active.
+	 * Register the three connector-config options + add a second
+	 * settings field on the shared `xmlse_search_console` section.
 	 *
 	 * @since 0.1.0
 	 */
 	public static function register_settings() {
 		register_setting(
-			'xmlse_engines',
+			'xmlse_search_console',
 			Bing::CONFIG_OPTION,
 			array(
 				'type'              => 'array',
@@ -90,7 +57,7 @@ final class Engines_Panel {
 			)
 		);
 		register_setting(
-			'xmlse_engines',
+			'xmlse_search_console',
 			Yandex::CONFIG_OPTION,
 			array(
 				'type'              => 'array',
@@ -105,7 +72,7 @@ final class Engines_Panel {
 			)
 		);
 		register_setting(
-			'xmlse_engines',
+			'xmlse_search_console',
 			Baidu::CONFIG_OPTION,
 			array(
 				'type'              => 'array',
@@ -117,37 +84,17 @@ final class Engines_Panel {
 			)
 		);
 
-		add_settings_section(
-			'xmlse_engines_main',
-			esc_html__( 'Multi-engine submissions', 'xml-sitemap-engines-advanced' ),
-			array( __CLASS__, 'render_intro' ),
-			'xmlse_engines'
-		);
 		add_settings_field(
-			'xmlse_engines_view',
-			esc_html__( 'Engines', 'xml-sitemap-engines-advanced' ),
+			'xmlse_engines_body',
+			esc_html__( 'Other engines', 'xml-sitemap-engines-advanced' ),
 			array( __CLASS__, 'render_body' ),
-			'xmlse_engines',
-			'xmlse_engines_main'
+			'xmlse_search_console',
+			'xmlse_search_console_main'
 		);
 	}
 
 	/**
-	 * Render intro copy.
-	 *
-	 * @since 0.1.0
-	 */
-	public static function render_intro() {
-		echo '<p>';
-		esc_html_e(
-			'Submit any enabled sitemap URL to Bing, Yandex, and Baidu in addition to Google. Each engine uses its own credential scheme — fill whichever you actually need; unused engines stay inert. The Google connector lives on the Search Console tab.',
-			'xml-sitemap-engines-advanced'
-		);
-		echo '</p>';
-	}
-
-	/**
-	 * Render the body — per-engine cards.
+	 * Render the body — per-engine cards for Bing / Yandex / Baidu.
 	 *
 	 * @since 0.1.0
 	 */
