@@ -116,6 +116,11 @@ add_action(
 			}
 		}
 
+		// Unified "Engines" settings tab.
+		if ( class_exists( 'XMLSE\\Advanced\\Admin\\Engines_Panel' ) ) {
+			\XMLSE\Advanced\Admin\Engines_Panel::register_hooks();
+		}
+
 		// Override the Search Console tab views — swap the free-tier
 		// Premium_Lock stub with the real OAuth wizard shipped by the
 		// add-on.
