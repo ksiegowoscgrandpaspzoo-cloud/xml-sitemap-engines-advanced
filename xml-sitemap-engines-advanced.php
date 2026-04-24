@@ -121,6 +121,16 @@ add_action(
 			\XMLSE\Advanced\Admin\Engines_Panel::register_hooks();
 		}
 
+		// Bulk-edit "Sitemap: exclude/include" field (Sprint 3).
+		if ( class_exists( 'XMLSE\\Advanced\\Admin\\Bulk_Edit' ) ) {
+			\XMLSE\Advanced\Admin\Bulk_Edit::register_hooks();
+		}
+
+		// Custom XSL themes for the sitemap preview (Sprint 3).
+		if ( class_exists( 'XMLSE\\Advanced\\Admin\\XSL_Themes' ) ) {
+			\XMLSE\Advanced\Admin\XSL_Themes::register_hooks();
+		}
+
 		// Override the Search Console tab views — swap the free-tier
 		// Premium_Lock stub with the real OAuth wizard shipped by the
 		// add-on.
