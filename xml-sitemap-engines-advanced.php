@@ -103,6 +103,56 @@ add_action(
 		if ( class_exists( 'XMLSE\\Advanced\\Admin\\GSC_Integration' ) ) {
 			\XMLSE\Advanced\Admin\GSC_Integration::register_hooks();
 		}
+
+		// Multi-engine submission connectors (Sprint 2).
+		$xmlse_adv_connectors = array(
+			'XMLSE\\Advanced\\Connectors\\Bing',
+			'XMLSE\\Advanced\\Connectors\\Yandex',
+			'XMLSE\\Advanced\\Connectors\\Baidu',
+		);
+		foreach ( $xmlse_adv_connectors as $xmlse_adv_connector ) {
+			if ( class_exists( $xmlse_adv_connector ) ) {
+				call_user_func( array( $xmlse_adv_connector, 'register_hooks' ) );
+			}
+		}
+
+		// Override the Search Console tab views — swap the free-tier
+		// Premium_Lock stub with the real OAuth wizard shipped by the
+		// add-on.
+		add_filter(
+			'xmlse_field_gsc_view',
+			function () {
+				return XMLSE_ADV_DIR . 'views/admin/field-gsc.php';
+			}
+		);
+		add_filter(
+			'xmlse_section_search_console_view',
+			function () {
+				return XMLSE_ADV_DIR . 'views/admin/section-search-console.php';
+			}
+		);
+
+		// Register the Settings API bindings the free repo dropped
+		// in Sprint 1 — the options + sanitiser live with the real
+		// class, not with the free-tier stub.
+		add_action(
+			'admin_init',
+			function () {
+				register_setting(
+					'xmlse_search_console',
+					'xmlse_gsc_config',
+					array(
+						'type'              => 'array',
+						'sanitize_callback' => array( 'XMLSE\\Advanced\\Admin\\GSC_Integration', 'sanitize_config' ),
+						'default'           => array(
+							'client_id'     => '',
+							'client_secret' => '',
+							'site_url'      => '',
+						),
+					)
+				);
+			}
+		);
 	},
 	10
 );

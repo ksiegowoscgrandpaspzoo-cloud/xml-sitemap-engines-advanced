@@ -123,6 +123,55 @@ final class GSC_Integration {
 	}
 
 	/**
+	 * Sanitize the `xmlse_gsc_config` option — used as the Settings
+	 * API sanitize_callback. Lived on `XMLSE\Admin\Sanitize::gsc_config`
+	 * in the free plugin before Sprint 1; now co-located with the class
+	 * that consumes the option.
+	 *
+	 * Accepted shape:
+	 *     array(
+	 *         'client_id'     => string,
+	 *         'client_secret' => string,
+	 *         'site_url'      => string, // URL-prefix or sc-domain:…
+	 *     )
+	 *
+	 * @since 0.1.0
+	 *
+	 * @param mixed $input Raw value.
+	 * @return array<string, string>
+	 */
+	public static function sanitize_config( $input ) {
+		$out = array(
+			'client_id'     => '',
+			'client_secret' => '',
+			'site_url'      => '',
+		);
+		if ( ! is_array( $input ) ) {
+			return $out;
+		}
+
+		if ( isset( $input['client_id'] ) ) {
+			$out['client_id'] = trim( sanitize_text_field( (string) $input['client_id'] ) );
+		}
+		if ( isset( $input['client_secret'] ) ) {
+			// Don't run sanitize_text_field — it strips whitespace-like
+			// code points a secret might legally contain. Trim + strip tags.
+			$out['client_secret'] = trim( wp_strip_all_tags( (string) $input['client_secret'] ) );
+		}
+		if ( isset( $input['site_url'] ) ) {
+			$raw = trim( (string) $input['site_url'] );
+			// Accept both property formats: URL-prefix + domain.
+			if ( 0 === strpos( $raw, 'sc-domain:' ) ) {
+				$out['site_url'] = 'sc-domain:' . sanitize_text_field( substr( $raw, 10 ) );
+			} else {
+				$out['site_url'] = esc_url_raw( $raw );
+			}
+		}
+
+		return $out;
+	}
+
+	/**
 	 * Current OAuth config (client id + client secret + site URL).
 	 *
 	 * @since 0.1.0
