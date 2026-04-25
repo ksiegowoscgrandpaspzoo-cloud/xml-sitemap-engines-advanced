@@ -46,6 +46,20 @@ final class GscIntegrationTest extends TestCase {
 				'admin_url'           => static function ( $path = '' ) {
 					return 'https://example.test/wp-admin/' . ltrim( (string) $path, '/' );
 				},
+				// Sprint 1 moved sanitize_config() onto GSC_Integration which
+				// host-validates `site_url` against home_url() — these stubs
+				// support that path. Without them every sanitize-test would
+				// die in `Abstract_Connector::host_belongs_to_this_site()`.
+				'home_url'            => static function ( $path = '' ) {
+					return 'https://example.test/' . ltrim( (string) $path, '/' );
+				},
+				'trailingslashit'     => static function ( $s ) {
+					return rtrim( (string) $s, '/' ) . '/';
+				},
+				'wp_parse_url'        => static function ( $url, $component = -1 ) {
+					return -1 === $component ? \parse_url( $url ) : \parse_url( $url, $component );
+				},
+				'__'                  => static function ( $s ) { return $s; },
 			)
 		);
 	}
@@ -90,7 +104,9 @@ final class GscIntegrationTest extends TestCase {
 		$cfg = GSC_Integration::get_config();
 		$this->assertSame( '', $cfg['client_id'] );
 		$this->assertSame( '', $cfg['client_secret'] );
-		$this->assertSame( '', $cfg['site_url'] );
+		// Sprint 2 UX iteration: empty site_url auto-fills from home_url()
+		// so the readonly form field always shows the current property URL.
+		$this->assertSame( 'https://example.test/', $cfg['site_url'] );
 	}
 
 	public function test_is_configured_requires_all_three_fields() {
@@ -118,7 +134,9 @@ final class GscIntegrationTest extends TestCase {
 		$cfg = GSC_Integration::get_config();
 		$this->assertSame( '', $cfg['client_id'] );
 		$this->assertSame( '', $cfg['client_secret'] );
-		$this->assertSame( '', $cfg['site_url'] );
+		// Sprint 2: empty site_url is auto-filled from home_url() so the
+		// readonly form field always shows the current property URL.
+		$this->assertSame( 'https://example.test/', $cfg['site_url'] );
 	}
 
 	// --- tokens round-trip -----------------------------------------------
@@ -214,29 +232,45 @@ final class GscIntegrationTest extends TestCase {
 	// --- Sanitize::gsc_config --------------------------------------------
 
 	public function test_sanitize_rejects_non_array_input() {
-		$out = Sanitize::gsc_config( 'garbage' );
+		$out = GSC_Integration::sanitize_config( 'garbage' );
 		$this->assertSame( '', $out['client_id'] );
 		$this->assertSame( '', $out['client_secret'] );
 		$this->assertSame( '', $out['site_url'] );
 	}
 
 	public function test_sanitize_trims_client_id() {
-		$out = Sanitize::gsc_config( array( 'client_id' => '  abc123.apps.googleusercontent.com  ' ) );
+		$out = GSC_Integration::sanitize_config( array( 'client_id' => '  abc123.apps.googleusercontent.com  ' ) );
 		$this->assertSame( 'abc123.apps.googleusercontent.com', $out['client_id'] );
 	}
 
 	public function test_sanitize_preserves_site_url_prefix_property() {
-		$out = Sanitize::gsc_config( array( 'site_url' => 'https://example.com/' ) );
-		$this->assertSame( 'https://example.com/', $out['site_url'] );
+		// Sprint 1 added host validation — site_url must match the current
+		// site (home_url stub: https://example.test/).
+		$out = GSC_Integration::sanitize_config( array( 'site_url' => 'https://example.test/' ) );
+		$this->assertSame( 'https://example.test/', $out['site_url'] );
 	}
 
 	public function test_sanitize_preserves_domain_property_prefix() {
-		$out = Sanitize::gsc_config( array( 'site_url' => 'sc-domain:example.com' ) );
-		$this->assertSame( 'sc-domain:example.com', $out['site_url'] );
+		// Domain-property format `sc-domain:HOST` — host portion is still
+		// validated against home_url(), but the `sc-domain:` prefix is
+		// preserved verbatim because Search Console treats it as a separate
+		// property type from URL-prefix.
+		$out = GSC_Integration::sanitize_config( array( 'site_url' => 'sc-domain:example.test' ) );
+		$this->assertSame( 'sc-domain:example.test', $out['site_url'] );
+	}
+
+	public function test_sanitize_rejects_foreign_site_url_prefix() {
+		$out = GSC_Integration::sanitize_config( array( 'site_url' => 'https://attacker.test/' ) );
+		$this->assertSame( '', $out['site_url'] );
+	}
+
+	public function test_sanitize_rejects_foreign_sc_domain() {
+		$out = GSC_Integration::sanitize_config( array( 'site_url' => 'sc-domain:attacker.test' ) );
+		$this->assertSame( '', $out['site_url'] );
 	}
 
 	public function test_sanitize_strips_tags_from_client_secret() {
-		$out = Sanitize::gsc_config(
+		$out = GSC_Integration::sanitize_config(
 			array( 'client_secret' => '  <script>evil</script>GOCSPX-realSecret  ' )
 		);
 		$this->assertSame( 'evilGOCSPX-realSecret', $out['client_secret'] );

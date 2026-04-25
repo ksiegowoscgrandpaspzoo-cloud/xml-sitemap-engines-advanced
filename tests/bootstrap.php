@@ -89,3 +89,7 @@ if ( defined( 'XMLSE_FREE_DIR' ) ) {
 
 // Load add-on classes under test.
 require_once __DIR__ . '/../inc/admin/class-gsc-integration.php';
+require_once __DIR__ . '/../inc/connectors/class-abstract-connector.php';
+require_once __DIR__ . '/../inc/connectors/class-bing.php';
+require_once __DIR__ . '/../inc/connectors/class-yandex.php';
+require_once __DIR__ . '/../inc/connectors/class-baidu.php';
