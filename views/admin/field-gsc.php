@@ -196,24 +196,37 @@ Premium_Lock::open(
 					<?php esc_html_e( '✓ Connected to Google Search Console.', 'xml-sitemap-engines' ); ?>
 				</strong>
 			</p>
-			<form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>" style="display:inline;">
-				<?php wp_nonce_field( 'xmlse_gsc_disconnect' ); ?>
-				<input type="hidden" name="action" value="xmlse_gsc_disconnect" />
-				<button type="submit" class="button">
-					<?php esc_html_e( 'Disconnect', 'xml-sitemap-engines' ); ?>
-				</button>
-			</form>
+			<?php
+			// GET-link buttons (not nested <form>) — this view is included from
+			// the xmlse_search_console settings field callback, so its DOM lives
+			// INSIDE the outer <form action="options.php">. HTML5 disallows nested
+			// forms; the browser closes the parent form at our inner </form>,
+			// orphaning the parent "Save changes" submit and breaking the tab.
+			$xmlse_gsc_disconnect_url = wp_nonce_url(
+				add_query_arg( 'action', 'xmlse_gsc_disconnect', admin_url( 'admin-post.php' ) ),
+				'xmlse_gsc_disconnect'
+			);
+			$xmlse_gsc_oauth_url = wp_nonce_url(
+				add_query_arg( 'action', 'xmlse_gsc_oauth_start', admin_url( 'admin-post.php' ) ),
+				'xmlse_gsc_oauth_start'
+			);
+			?>
+			<a href="<?php echo esc_url( $xmlse_gsc_disconnect_url ); ?>" class="button">
+				<?php esc_html_e( 'Disconnect', 'xml-sitemap-engines' ); ?>
+			</a>
 		<?php elseif ( $xmlse_configured ) : ?>
 			<p class="description">
 				<?php esc_html_e( 'Save changes first, then click Connect. You will be redirected to Google to grant permission, then back here.', 'xml-sitemap-engines' ); ?>
 			</p>
-			<form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>" style="display:inline;">
-				<?php wp_nonce_field( 'xmlse_gsc_oauth_start' ); ?>
-				<input type="hidden" name="action" value="xmlse_gsc_oauth_start" />
-				<button type="submit" class="button button-primary">
-					<?php esc_html_e( 'Connect to Google Search Console', 'xml-sitemap-engines' ); ?>
-				</button>
-			</form>
+			<?php
+			$xmlse_gsc_oauth_url = wp_nonce_url(
+				add_query_arg( 'action', 'xmlse_gsc_oauth_start', admin_url( 'admin-post.php' ) ),
+				'xmlse_gsc_oauth_start'
+			);
+			?>
+			<a href="<?php echo esc_url( $xmlse_gsc_oauth_url ); ?>" class="button button-primary">
+				<?php esc_html_e( 'Connect to Google Search Console', 'xml-sitemap-engines' ); ?>
+			</a>
 		<?php else : ?>
 			<p class="description" style="color:#b45309;">
 				<?php esc_html_e( 'Fill in Client ID, Client Secret, and Search Console property above, save changes, then return here to authorise.', 'xml-sitemap-engines' ); ?>
@@ -241,16 +254,22 @@ Premium_Lock::open(
 					<a href="<?php echo esc_url( (string) $xmlse_sm['url'] ); ?>" target="_blank" rel="noopener">
 						<code><?php echo esc_html( (string) $xmlse_sm['url'] ); ?></code>
 					</a>
-					<form method="post"
-						action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>"
-						style="display:inline-block;margin-left:8px;">
-						<?php wp_nonce_field( 'xmlse_gsc_submit' ); ?>
-						<input type="hidden" name="action" value="xmlse_gsc_submit" />
-						<input type="hidden" name="sitemap_url" value="<?php echo esc_attr( (string) $xmlse_sm['url'] ); ?>" />
-						<button type="submit" class="button">
-							<?php esc_html_e( 'Submit now', 'xml-sitemap-engines' ); ?>
-						</button>
-					</form>
+					<?php
+					// GET link, not nested <form> — see comment on Disconnect button above.
+					$xmlse_gsc_submit_url = wp_nonce_url(
+						add_query_arg(
+							array(
+								'action'      => 'xmlse_gsc_submit',
+								'sitemap_url' => rawurlencode( (string) $xmlse_sm['url'] ),
+							),
+							admin_url( 'admin-post.php' )
+						),
+						'xmlse_gsc_submit'
+					);
+					?>
+					<a href="<?php echo esc_url( $xmlse_gsc_submit_url ); ?>" class="button" style="margin-left:8px;">
+						<?php esc_html_e( 'Submit now', 'xml-sitemap-engines' ); ?>
+					</a>
 				</div>
 			</div>
 		<?php endforeach; ?>

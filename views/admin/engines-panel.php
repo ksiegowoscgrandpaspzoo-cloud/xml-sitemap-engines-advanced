@@ -157,19 +157,30 @@ $xmlse_adv_baidu_cfg  = Baidu::get_config();
 	<div class="xmlse-section__row">
 		<div class="xmlse-section__row-label"><?php esc_html_e( 'Connection', 'xml-sitemap-engines-advanced' ); ?></div>
 		<div class="xmlse-section__row-control">
+			<?php
+			// GET-link buttons (not nested <form>) — this view is included from the
+			// xmlse_search_console settings field callback, so its DOM lives INSIDE
+			// the outer <form action="options.php">. HTML5 disallows nested forms;
+			// the browser would close the parent form at our inner </form>, orphaning
+			// the parent "Save changes" submit and breaking the whole tab.
+			$xmlse_yandex_disconnect_url = wp_nonce_url(
+				add_query_arg( 'action', 'xmlse_adv_yandex_disconnect', admin_url( 'admin-post.php' ) ),
+				'xmlse_adv_yandex_disconnect'
+			);
+			$xmlse_yandex_oauth_url = wp_nonce_url(
+				add_query_arg( 'action', 'xmlse_adv_yandex_oauth_start', admin_url( 'admin-post.php' ) ),
+				'xmlse_adv_yandex_oauth_start'
+			);
+			?>
 			<?php if ( Yandex::is_connected() ) : ?>
 				<strong style="color:#15803d;">✓ <?php esc_html_e( 'Connected', 'xml-sitemap-engines-advanced' ); ?></strong>
-				<form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>" style="display:inline;margin-left:8px;">
-					<?php wp_nonce_field( 'xmlse_adv_yandex_disconnect' ); ?>
-					<input type="hidden" name="action" value="xmlse_adv_yandex_disconnect" />
-					<button type="submit" class="button button-small"><?php esc_html_e( 'Disconnect', 'xml-sitemap-engines-advanced' ); ?></button>
-				</form>
+				<a href="<?php echo esc_url( $xmlse_yandex_disconnect_url ); ?>" class="button button-small" style="margin-left:8px;">
+					<?php esc_html_e( 'Disconnect', 'xml-sitemap-engines-advanced' ); ?>
+				</a>
 			<?php elseif ( Yandex::is_configured() ) : ?>
-				<form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>" style="display:inline;">
-					<?php wp_nonce_field( 'xmlse_adv_yandex_oauth_start' ); ?>
-					<input type="hidden" name="action" value="xmlse_adv_yandex_oauth_start" />
-					<button type="submit" class="button button-primary"><?php esc_html_e( 'Connect Yandex', 'xml-sitemap-engines-advanced' ); ?></button>
-				</form>
+				<a href="<?php echo esc_url( $xmlse_yandex_oauth_url ); ?>" class="button button-primary">
+					<?php esc_html_e( 'Connect Yandex', 'xml-sitemap-engines-advanced' ); ?>
+				</a>
 			<?php else : ?>
 				<p class="description"><?php esc_html_e( 'Save Client ID / Secret / site URL first, then return to authorise.', 'xml-sitemap-engines-advanced' ); ?></p>
 			<?php endif; ?>
@@ -253,18 +264,26 @@ $xmlse_adv_baidu_cfg  = Baidu::get_config();
 				<div class="xmlse-section__row-control">
 					<code><?php echo esc_html( (string) $xmlse_sm['url'] ); ?></code>
 					<div style="margin-top:8px;display:flex;gap:6px;flex-wrap:wrap;">
-						<?php foreach ( array( 'bing', 'yandex', 'baidu' ) as $xmlse_eng ) : ?>
-							<form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>">
-								<?php wp_nonce_field( 'xmlse_adv_' . $xmlse_eng . '_submit' ); ?>
-								<input type="hidden" name="action" value="<?php echo esc_attr( 'xmlse_adv_' . $xmlse_eng . '_submit' ); ?>" />
-								<input type="hidden" name="sitemap_url" value="<?php echo esc_attr( (string) $xmlse_sm['url'] ); ?>" />
-								<button type="submit" class="button button-small">
-									<?php
-									/* translators: %s: engine label */
-									printf( esc_html__( 'Submit → %s', 'xml-sitemap-engines-advanced' ), esc_html( ucfirst( $xmlse_eng ) ) );
-									?>
-								</button>
-							</form>
+						<?php
+						foreach ( array( 'bing', 'yandex', 'baidu' ) as $xmlse_eng ) :
+							// GET link, not nested <form> — see comment on Yandex card above.
+							$xmlse_eng_submit_url = wp_nonce_url(
+								add_query_arg(
+									array(
+										'action'      => 'xmlse_adv_' . $xmlse_eng . '_submit',
+										'sitemap_url' => rawurlencode( (string) $xmlse_sm['url'] ),
+									),
+									admin_url( 'admin-post.php' )
+								),
+								'xmlse_adv_' . $xmlse_eng . '_submit'
+							);
+							?>
+							<a href="<?php echo esc_url( $xmlse_eng_submit_url ); ?>" class="button button-small">
+								<?php
+								/* translators: %s: engine label */
+								printf( esc_html__( 'Submit → %s', 'xml-sitemap-engines-advanced' ), esc_html( ucfirst( $xmlse_eng ) ) );
+								?>
+							</a>
 						<?php endforeach; ?>
 					</div>
 				</div>
