@@ -104,7 +104,11 @@ final class Bing extends Abstract_Connector {
 			$out['api_key'] = preg_replace( '/[^a-zA-Z0-9]/', '', (string) $input['api_key'] );
 		}
 		if ( isset( $input['site_url'] ) ) {
-			$out['site_url'] = esc_url_raw( trim( (string) $input['site_url'] ) );
+			$raw = esc_url_raw( trim( (string) $input['site_url'] ) );
+			if ( '' !== $raw && ! self::host_belongs_to_this_site( $raw ) ) {
+				$raw = '';
+			}
+			$out['site_url'] = $raw;
 		}
 		return $out;
 	}

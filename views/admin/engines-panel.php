@@ -77,12 +77,21 @@ $xmlse_adv_baidu_cfg  = Baidu::get_config();
 			<label for="xmlse_adv_bing_site_url"><?php esc_html_e( 'Verified site URL', 'xml-sitemap-engines-advanced' ); ?></label>
 		</div>
 		<div class="xmlse-section__row-control">
-			<input type="text"
+			<input type="url"
 				id="xmlse_adv_bing_site_url"
 				name="<?php echo esc_attr( Bing::CONFIG_OPTION ); ?>[site_url]"
 				value="<?php echo esc_attr( $xmlse_adv_bing_cfg['site_url'] ); ?>"
 				placeholder="<?php echo esc_attr( trailingslashit( (string) home_url() ) ); ?>"
 				class="regular-text" />
+			<p class="description">
+				<?php
+				/* translators: %s: current site host */
+				printf(
+					esc_html__( 'Must share this site\'s host (%s). Foreign URLs are cleared on save — the plugin only pushes to search-engine properties registered for this site.', 'xml-sitemap-engines-advanced' ),
+					'<code>' . esc_html( (string) wp_parse_url( home_url( '/' ), PHP_URL_HOST ) ) . '</code>'
+				);
+				?>
+			</p>
 		</div>
 	</div>
 </div>
@@ -128,12 +137,21 @@ $xmlse_adv_baidu_cfg  = Baidu::get_config();
 			<label for="xmlse_adv_yandex_site_url"><?php esc_html_e( 'Verified site URL', 'xml-sitemap-engines-advanced' ); ?></label>
 		</div>
 		<div class="xmlse-section__row-control">
-			<input type="text"
+			<input type="url"
 				id="xmlse_adv_yandex_site_url"
 				name="<?php echo esc_attr( Yandex::CONFIG_OPTION ); ?>[site_url]"
 				value="<?php echo esc_attr( $xmlse_adv_yandex_cfg['site_url'] ); ?>"
 				placeholder="<?php echo esc_attr( trailingslashit( (string) home_url() ) ); ?>"
 				class="regular-text" />
+			<p class="description">
+				<?php
+				/* translators: %s: current site host */
+				printf(
+					esc_html__( 'Must share this site\'s host (%s). Foreign URLs are cleared on save.', 'xml-sitemap-engines-advanced' ),
+					'<code>' . esc_html( (string) wp_parse_url( home_url( '/' ), PHP_URL_HOST ) ) . '</code>'
+				);
+				?>
+			</p>
 		</div>
 	</div>
 	<div class="xmlse-section__row">
@@ -180,12 +198,21 @@ $xmlse_adv_baidu_cfg  = Baidu::get_config();
 			<label for="xmlse_adv_baidu_site"><?php esc_html_e( 'Verified site URL', 'xml-sitemap-engines-advanced' ); ?></label>
 		</div>
 		<div class="xmlse-section__row-control">
-			<input type="text"
+			<input type="url"
 				id="xmlse_adv_baidu_site"
 				name="<?php echo esc_attr( Baidu::CONFIG_OPTION ); ?>[site]"
 				value="<?php echo esc_attr( $xmlse_adv_baidu_cfg['site'] ); ?>"
 				placeholder="<?php echo esc_attr( trailingslashit( (string) home_url() ) ); ?>"
 				class="regular-text" />
+			<p class="description">
+				<?php
+				/* translators: %s: current site host */
+				printf(
+					esc_html__( 'Must share this site\'s host (%s). Foreign URLs are cleared on save.', 'xml-sitemap-engines-advanced' ),
+					'<code>' . esc_html( (string) wp_parse_url( home_url( '/' ), PHP_URL_HOST ) ) . '</code>'
+				);
+				?>
+			</p>
 		</div>
 	</div>
 	<div class="xmlse-section__row">

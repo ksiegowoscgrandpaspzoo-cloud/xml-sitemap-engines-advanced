@@ -185,7 +185,7 @@ abstract class Abstract_Connector {
 	/**
 	 * Whether the URL resolves to the current site — prevents an admin
 	 * (or nonce-stealing attacker) from submitting arbitrary third-party
-	 * URLs through the connector.
+	 * URLs through the connector. Checks both host + path prefix.
 	 *
 	 * @since 0.1.0
 	 *
@@ -213,6 +213,51 @@ abstract class Abstract_Connector {
 
 		return 0 === strpos( $cand_path, rtrim( $home_path, '/' ) . '/' )
 			|| $cand_path === $home_path;
+	}
+
+	/**
+	 * Whether a given URL or bare domain string shares the current site's
+	 * host. Looser than {@see self::url_belongs_to_this_site()} — only
+	 * host-matching, no path comparison — so it's usable for "verified
+	 * site URL" property fields that legitimately point at a parent path
+	 * (e.g. a subfolder WP install verifies `example.com/` at the root).
+	 *
+	 * Accepts:
+	 *   - Full URL: `https://example.com/some/path`
+	 *   - Bare host: `example.com`
+	 *   - Subdomain check: `www.example.com` ≠ `example.com` (intentional —
+	 *     search engines treat them as separate properties).
+	 *
+	 * @since 0.1.0
+	 *
+	 * @param string $candidate Full URL or bare domain.
+	 * @return bool
+	 */
+	public static function host_belongs_to_this_site( $candidate ) {
+		$candidate = (string) $candidate;
+		if ( '' === $candidate ) {
+			return false;
+		}
+
+		$home_host = strtolower( (string) wp_parse_url( home_url( '/' ), PHP_URL_HOST ) );
+		if ( '' === $home_host ) {
+			return false;
+		}
+
+		// Full URL path — parse host.
+		$cand_host = wp_parse_url( $candidate, PHP_URL_HOST );
+		if ( null === $cand_host ) {
+			// Not a parseable URL — assume bare host.
+			$cand_host = $candidate;
+		}
+		$cand_host = strtolower( (string) $cand_host );
+		// Strip leading scheme-like prefixes if the user pasted a scheme
+		// without `://`.
+		$cand_host = preg_replace( '#^(https?|ftp):?/*#', '', $cand_host );
+		// Strip trailing slash / path.
+		$cand_host = preg_replace( '#/.*$#', '', $cand_host );
+
+		return '' !== $cand_host && $home_host === $cand_host;
 	}
 
 	/**

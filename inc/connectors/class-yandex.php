@@ -141,7 +141,13 @@ final class Yandex extends Abstract_Connector {
 			$out['client_secret'] = trim( wp_strip_all_tags( (string) $input['client_secret'] ) );
 		}
 		if ( isset( $input['site_url'] ) ) {
-			$out['site_url'] = esc_url_raw( trim( (string) $input['site_url'] ) );
+			$raw = esc_url_raw( trim( (string) $input['site_url'] ) );
+			if ( '' !== $raw && ! self::host_belongs_to_this_site( $raw ) ) {
+				// Foreign host — clear it AND clear the cached host_id
+				// because a fresh resolution is needed for the new site.
+				$raw = '';
+			}
+			$out['site_url'] = $raw;
 		}
 		// user_id + host_id are auto-filled after the first submit; they
 		// come from discovery round-trips, not from the form.

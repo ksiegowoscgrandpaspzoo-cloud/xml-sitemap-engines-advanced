@@ -102,7 +102,16 @@ final class Baidu extends Abstract_Connector {
 			return $out;
 		}
 		if ( isset( $input['site'] ) ) {
-			$out['site'] = esc_url_raw( trim( (string) $input['site'] ) );
+			$raw = esc_url_raw( trim( (string) $input['site'] ) );
+			// Only accept if the host matches the current WordPress site.
+			// Prevents an admin from configuring the plugin to push to a
+			// domain they don't own — Baidu would reject anyway, but the
+			// token belongs with its intended domain, so we refuse the
+			// configuration locally.
+			if ( '' !== $raw && ! self::host_belongs_to_this_site( $raw ) ) {
+				$raw = '';
+			}
+			$out['site'] = $raw;
 		}
 		if ( isset( $input['token'] ) ) {
 			$out['token'] = preg_replace( '/[^a-zA-Z0-9]/', '', (string) $input['token'] );

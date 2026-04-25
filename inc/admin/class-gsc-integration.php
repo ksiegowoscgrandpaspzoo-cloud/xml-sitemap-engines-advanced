@@ -162,9 +162,19 @@ final class GSC_Integration {
 			$raw = trim( (string) $input['site_url'] );
 			// Accept both property formats: URL-prefix + domain.
 			if ( 0 === strpos( $raw, 'sc-domain:' ) ) {
-				$out['site_url'] = 'sc-domain:' . sanitize_text_field( substr( $raw, 10 ) );
+				$domain = sanitize_text_field( substr( $raw, 10 ) );
+				// Reject foreign domains — prevents admin misconfiguration
+				// pointing at a property they don't own.
+				if ( '' !== $domain && ! \XMLSE\Advanced\Connectors\Abstract_Connector::host_belongs_to_this_site( $domain ) ) {
+					$domain = '';
+				}
+				$out['site_url'] = '' !== $domain ? 'sc-domain:' . $domain : '';
 			} else {
-				$out['site_url'] = esc_url_raw( $raw );
+				$candidate = esc_url_raw( $raw );
+				if ( '' !== $candidate && ! \XMLSE\Advanced\Connectors\Abstract_Connector::host_belongs_to_this_site( $candidate ) ) {
+					$candidate = '';
+				}
+				$out['site_url'] = $candidate;
 			}
 		}
 

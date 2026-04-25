@@ -188,6 +188,15 @@ Premium_Lock::open(
 			);
 			?>
 		</p>
+		<p class="description">
+			<?php
+			/* translators: %s: current site host */
+			printf(
+				esc_html__( 'The host must match this site (%s). Foreign properties are cleared on save — the plugin only submits sitemaps belonging to this WordPress install.', 'xml-sitemap-engines' ),
+				'<code>' . esc_html( (string) wp_parse_url( home_url( '/' ), PHP_URL_HOST ) ) . '</code>'
+			);
+			?>
+		</p>
 	</div>
 </div>
 
