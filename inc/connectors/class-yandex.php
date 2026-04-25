@@ -92,10 +92,14 @@ final class Yandex extends Abstract_Connector {
 		if ( ! is_array( $raw ) ) {
 			$raw = array();
 		}
+		$site_url = isset( $raw['site_url'] ) ? (string) $raw['site_url'] : '';
+		if ( '' === $site_url ) {
+			$site_url = trailingslashit( (string) home_url() );
+		}
 		return array(
 			'client_id'     => isset( $raw['client_id'] ) ? (string) $raw['client_id'] : '',
 			'client_secret' => isset( $raw['client_secret'] ) ? (string) $raw['client_secret'] : '',
-			'site_url'      => isset( $raw['site_url'] ) ? (string) $raw['site_url'] : '',
+			'site_url'      => $site_url,
 			'user_id'       => isset( $raw['user_id'] ) ? (int) $raw['user_id'] : 0,
 			'host_id'       => isset( $raw['host_id'] ) ? (string) $raw['host_id'] : '',
 		);

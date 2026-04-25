@@ -69,8 +69,12 @@ final class Baidu extends Abstract_Connector {
 		if ( ! is_array( $raw ) ) {
 			$raw = array();
 		}
+		$site = isset( $raw['site'] ) ? (string) $raw['site'] : '';
+		if ( '' === $site ) {
+			$site = trailingslashit( (string) home_url() );
+		}
 		return array(
-			'site'  => isset( $raw['site'] ) ? (string) $raw['site'] : '',
+			'site'  => $site,
 			'token' => isset( $raw['token'] ) ? (string) $raw['token'] : '',
 		);
 	}

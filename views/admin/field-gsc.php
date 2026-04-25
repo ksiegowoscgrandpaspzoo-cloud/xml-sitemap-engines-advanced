@@ -177,25 +177,11 @@ Premium_Lock::open(
 		<input type="text"
 			id="xmlse_gsc_site_url"
 			name="xmlse_gsc_config[site_url]"
-			value="<?php echo esc_attr( $xmlse_cfg['site_url'] ); ?>"
-			placeholder="<?php echo esc_attr( trailingslashit( (string) home_url() ) ); ?>"
-			class="regular-text" />
+			value="<?php echo esc_attr( trailingslashit( (string) home_url() ) ); ?>"
+			class="regular-text"
+			readonly />
 		<p class="description">
-			<?php
-			echo wp_kses(
-				__( 'Either a URL-prefix property (<code>https://example.com/</code>) or a domain property (<code>sc-domain:example.com</code>). Must exactly match a property the authorising Google account has at least Full access to.', 'xml-sitemap-engines' ),
-				array( 'code' => array() )
-			);
-			?>
-		</p>
-		<p class="description">
-			<?php
-			/* translators: %s: current site host */
-			printf(
-				esc_html__( 'The host must match this site (%s). Foreign properties are cleared on save — the plugin only submits sitemaps belonging to this WordPress install.', 'xml-sitemap-engines' ),
-				'<code>' . esc_html( (string) wp_parse_url( home_url( '/' ), PHP_URL_HOST ) ) . '</code>'
-			);
-			?>
+			<?php esc_html_e( 'Auto-filled from your WordPress install. URL-prefix property assumed; if your Search Console property uses the domain (sc-domain:) format instead, override via the xmlse_gsc_config option through code/WP-CLI.', 'xml-sitemap-engines' ); ?>
 		</p>
 	</div>
 </div>

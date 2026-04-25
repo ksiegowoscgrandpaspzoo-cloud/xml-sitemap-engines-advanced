@@ -80,17 +80,11 @@ $xmlse_adv_baidu_cfg  = Baidu::get_config();
 			<input type="url"
 				id="xmlse_adv_bing_site_url"
 				name="<?php echo esc_attr( Bing::CONFIG_OPTION ); ?>[site_url]"
-				value="<?php echo esc_attr( $xmlse_adv_bing_cfg['site_url'] ); ?>"
-				placeholder="<?php echo esc_attr( trailingslashit( (string) home_url() ) ); ?>"
-				class="regular-text" />
+				value="<?php echo esc_attr( trailingslashit( (string) home_url() ) ); ?>"
+				class="regular-text"
+				readonly />
 			<p class="description">
-				<?php
-				/* translators: %s: current site host */
-				printf(
-					esc_html__( 'Must share this site\'s host (%s). Foreign URLs are cleared on save — the plugin only pushes to search-engine properties registered for this site.', 'xml-sitemap-engines-advanced' ),
-					'<code>' . esc_html( (string) wp_parse_url( home_url( '/' ), PHP_URL_HOST ) ) . '</code>'
-				);
-				?>
+				<?php esc_html_e( 'Auto-filled from your WordPress install. The plugin only pushes to search-engine properties registered for this exact host.', 'xml-sitemap-engines-advanced' ); ?>
 			</p>
 		</div>
 	</div>
@@ -140,9 +134,9 @@ $xmlse_adv_baidu_cfg  = Baidu::get_config();
 			<input type="url"
 				id="xmlse_adv_yandex_site_url"
 				name="<?php echo esc_attr( Yandex::CONFIG_OPTION ); ?>[site_url]"
-				value="<?php echo esc_attr( $xmlse_adv_yandex_cfg['site_url'] ); ?>"
-				placeholder="<?php echo esc_attr( trailingslashit( (string) home_url() ) ); ?>"
-				class="regular-text" />
+				value="<?php echo esc_attr( trailingslashit( (string) home_url() ) ); ?>"
+				class="regular-text"
+				readonly />
 			<p class="description">
 				<?php
 				/* translators: %s: current site host */
@@ -201,9 +195,9 @@ $xmlse_adv_baidu_cfg  = Baidu::get_config();
 			<input type="url"
 				id="xmlse_adv_baidu_site"
 				name="<?php echo esc_attr( Baidu::CONFIG_OPTION ); ?>[site]"
-				value="<?php echo esc_attr( $xmlse_adv_baidu_cfg['site'] ); ?>"
-				placeholder="<?php echo esc_attr( trailingslashit( (string) home_url() ) ); ?>"
-				class="regular-text" />
+				value="<?php echo esc_attr( trailingslashit( (string) home_url() ) ); ?>"
+				class="regular-text"
+				readonly />
 			<p class="description">
 				<?php
 				/* translators: %s: current site host */

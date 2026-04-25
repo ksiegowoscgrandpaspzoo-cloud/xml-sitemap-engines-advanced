@@ -72,9 +72,16 @@ final class Bing extends Abstract_Connector {
 		if ( ! is_array( $raw ) ) {
 			$raw = array();
 		}
+		$site_url = isset( $raw['site_url'] ) ? (string) $raw['site_url'] : '';
+		// Auto-fill from home_url() when empty — the readonly UI form
+		// always submits this value, but the option may be empty before
+		// the first save.
+		if ( '' === $site_url ) {
+			$site_url = trailingslashit( (string) home_url() );
+		}
 		return array(
 			'api_key'  => isset( $raw['api_key'] ) ? (string) $raw['api_key'] : '',
-			'site_url' => isset( $raw['site_url'] ) ? (string) $raw['site_url'] : '',
+			'site_url' => $site_url,
 		);
 	}
 
