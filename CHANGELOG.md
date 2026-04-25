@@ -44,6 +44,30 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **Sprint P3 — premium-repo PHPUnit suite.** 47 new connector tests across
+  4 test files (`AbstractConnectorTest` / `BingTest` / `YandexTest` /
+  `BaiduTest`) covering the shared SSRF guards (`host_belongs_to_this_site`,
+  `url_belongs_to_this_site`), each connector's `sanitize_config` + `get_config`
+  + `is_configured` truth tables, and a regression guard that
+  `Yandex::sanitize_config` does NOT let a malicious POST overwrite the
+  auto-discovered `user_id` / `host_id`. Also fixed 4 stale references in
+  the existing `GscIntegrationTest` (Sprint 1's GSC extraction moved
+  `Sanitize::gsc_config()` onto `GSC_Integration::sanitize_config()` but
+  the test wasn't updated; never caught because nobody ran the premium
+  PHPUnit suite until now). Total: **78 tests / 119 assertions, all green.**
+
+- **Sprint 3 — Bulk-edit "Exclude from XML sitemap" + XSL colour themes.**
+  `inc/admin/class-bulk-edit.php` registers two bulk actions
+  (`xmlse_bulk_exclude` / `xmlse_bulk_include`) on every public post-type
+  list table — sets / unsets `_xmlse_exclude` post-meta on selected IDs,
+  per-post `current_user_can('edit_post')` check, success notice emitted
+  via the free plugin's Sprint-0.2 flash-renderer (the free plugin
+  registers `bulk_exclude_ok` / `bulk_include_ok` slugs so the notice
+  works regardless of activation order). `inc/admin/class-xsl-themes.php`
+  hooks the free plugin's `xmlse_stylesheet_url` filter to swap in one of
+  5 colour-themed XSL variants (default / blue / green / orange /
+  monochrome) selected via a new option `xmlse_advanced_xsl_theme`.
+
 - **Sprint 2 — Bing connector.** API-key auth (Bing Webmaster API
   endpoint), submission delegated to free-tier IndexNow (no duplicate
   HTTP). Status-lookup UI is shipped but empty pending GetUrlInfo
