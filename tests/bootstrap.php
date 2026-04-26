@@ -57,13 +57,18 @@ if ( ! class_exists( 'WP_Error' ) ) {
 	// phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals -- WP core class stub for unit tests.
 	class WP_Error {
 		private $errors = array();
+		private $code   = '';
 		public function __construct( $code = '', $message = '' ) {
 			if ( '' !== $code ) {
 				$this->errors[ $code ] = $message;
+				$this->code            = (string) $code;
 			}
 		}
 		public function get_error_message() {
 			return (string) reset( $this->errors );
+		}
+		public function get_error_code() {
+			return $this->code;
 		}
 	}
 }
@@ -87,9 +92,22 @@ if ( defined( 'XMLSE_FREE_DIR' ) ) {
 	require_once XMLSE_FREE_DIR . '/inc/admin/class-sitemap-settings.php';
 }
 
+// Source-tree constants required by `XMLSE\Advanced\License` to find the
+// vendored EDD updater file. Mirrors what the bootstrap defines at runtime.
+if ( ! defined( 'XMLSE_ADV_DIR' ) ) {
+	define( 'XMLSE_ADV_DIR', realpath( __DIR__ . '/..' ) . '/' );
+}
+if ( ! defined( 'XMLSE_ADV_FILE' ) ) {
+	define( 'XMLSE_ADV_FILE', XMLSE_ADV_DIR . 'xml-sitemap-engines-advanced.php' );
+}
+if ( ! defined( 'XMLSE_ADV_VERSION' ) ) {
+	define( 'XMLSE_ADV_VERSION', '0.1.0' );
+}
+
 // Load add-on classes under test.
 require_once __DIR__ . '/../inc/admin/class-gsc-integration.php';
 require_once __DIR__ . '/../inc/connectors/class-abstract-connector.php';
 require_once __DIR__ . '/../inc/connectors/class-bing.php';
 require_once __DIR__ . '/../inc/connectors/class-yandex.php';
 require_once __DIR__ . '/../inc/connectors/class-baidu.php';
+require_once __DIR__ . '/../inc/class-license.php';
