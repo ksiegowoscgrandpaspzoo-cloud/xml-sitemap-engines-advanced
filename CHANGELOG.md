@@ -8,6 +8,34 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- **EDD Software Licensing integration** (`inc/class-license.php`,
+  `views/admin/section-license-pro.php`,
+  `inc/vendor/EDD_SL_Plugin_Updater.php`). New `XMLSE\Advanced\License`
+  controller wires a license-key activation flow against an EDD SL
+  endpoint, a daily revalidation cron
+  (`xmlse_pro_license_daily_check`), and an auto-update bootstrap.
+  Bootstrap gate flipped: `xmlse_advanced_enabled` and
+  `xmlse_news_advanced_enabled` now resolve to `License::is_active()`
+  instead of `__return_true` — paying customers see premium,
+  freeloaders with the zip see the locked free-tier UI.
+  Storage option `xmlse_pro_license` (non-autoloaded) holds key,
+  status, expiry, customer_email, last_check. Activation form
+  rendered via `xmlse_add_settings` action hook into the free
+  plugin's License tab. EDD store URL and item ID are placeholder
+  constants overridable via `xmlse_pro_license_api_url` /
+  `xmlse_pro_license_item_id` filters until the customer's EDD store
+  goes live. `EDD_SL_Plugin_Updater.php` shipped as a no-op stub
+  (canonical file lives inside the paid EDD SL extension zip and is
+  not distributed standalone); `class_exists()`-guarded so a straight
+  swap works once the customer has the file. **28 new tests / 63
+  assertions in `tests/unit/LicenseTest.php`** covering the
+  `is_active` truth table including the 14-day grace window,
+  persistence rules around `activate` / `deactivate` / `check`,
+  transport-error handling, and the `xmlse_license_status` filter
+  extension that backfills the free side.
+
 ### Fixed
 
 - **Nested `<form>` bug breaking Save changes on Search-engines tab.**

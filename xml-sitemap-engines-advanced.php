@@ -95,9 +95,19 @@ add_action(
 			return;
 		}
 
-		// Flip the premium gates. Add-on presence = premium on.
-		add_filter( 'xmlse_advanced_enabled', '__return_true' );
-		add_filter( 'xmlse_news_advanced_enabled', '__return_true' );
+		// Flip the premium gates ONLY when the license server says the
+		// site has a valid key (or is inside the grace window). Mere
+		// presence of the add-on zip is not enough — paying customers
+		// see premium, freeloaders see the locked free-tier UI.
+		add_filter( 'xmlse_advanced_enabled', array( '\\XMLSE\\Advanced\\License', 'is_active' ) );
+		add_filter( 'xmlse_news_advanced_enabled', array( '\\XMLSE\\Advanced\\License', 'is_active' ) );
+
+		// License controller — owns activation flow, daily revalidation
+		// cron, auto-update bootstrap, and the activation form rendered
+		// into the free-side License tab via `xmlse_add_settings`.
+		if ( class_exists( 'XMLSE\\Advanced\\License' ) ) {
+			\XMLSE\Advanced\License::register_hooks();
+		}
 
 		// Register add-on components.
 		if ( class_exists( 'XMLSE\\Advanced\\Admin\\GSC_Integration' ) ) {
@@ -170,4 +180,30 @@ add_action(
 		);
 	},
 	10
+);
+
+/**
+ * Schedule the daily license revalidation cron at activation, drop it at
+ * deactivation. Live `XMLSE\Advanced\License::CRON_HOOK` constant lookups
+ * would require the autoloader to have run, but `register_*_hook` callbacks
+ * fire BEFORE `plugins_loaded` — the literal cron-hook string is duplicated
+ * here on purpose. Keep these two values in sync if `License::CRON_HOOK`
+ * ever moves.
+ *
+ * @since 0.1.0
+ */
+register_activation_hook(
+	__FILE__,
+	function () {
+		if ( ! wp_next_scheduled( 'xmlse_pro_license_daily_check' ) ) {
+			wp_schedule_event( time() + DAY_IN_SECONDS, 'daily', 'xmlse_pro_license_daily_check' );
+		}
+	}
+);
+
+register_deactivation_hook(
+	__FILE__,
+	function () {
+		wp_clear_scheduled_hook( 'xmlse_pro_license_daily_check' );
+	}
 );
